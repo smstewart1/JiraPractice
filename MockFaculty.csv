@@ -1,0 +1,9 @@
+﻿LastName,FirstName,ID,Weight,D_pref,T_pref,C_Pref,Camp_pref
+Aaronson,Bob,baarons@college.edu,0.255,MTW,"Midday, Afternoon","CHM-151, CHM-152, CHM252","SNWC, NWC, RTP, EWC"
+Twerwilliger,Steve,stwerwi@college.edu,0.6,TTh,"Morning, Afternoon","CHM-151, CHM-152, CHM251, CHM252","SNWC, SWC, EWC"
+Marie,R. Roger,rmarie@college.edu,0.651,MTWTh,"Morning, Afternoon","CHM-151, CHM-152, CHM251","SNWC, SWC, NWC, EWC"
+Logan,Marie,mlogan@college.edu,0.052,MWTh,"Morning, Midday","CHM-151, CHM-152, CHM251","SNWC, RTP"
+Erwin,Leslie,lerwin@college.edu,0.269,TWThF,"Morning, Midday","CHM-151, CHM-152","SWC, NWC, EWC"
+Moon,Leanna,lmoon@college.edu,0.698,MThF,"Morning, Midday, Afternoon",CHM-151,NWC
+McDonald,Hannah,hmcdona@college.edu,0.617,MWF,"Morning, Afternoon","CHM-090, CHM-151","SNWC, SWC, EWC"
+Zwie,Chuck,czwie@college.edu,0.181,MW,"Morning, Midday, Afternoon","CHM-090, CHM-151","NWC, RTP"
