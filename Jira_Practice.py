@@ -55,7 +55,7 @@ def main() -> None:
     global Modality_dictionary
     Modality_dictionary = {}
     for i, mode in enumerate(Modality):
-        Campus_dictionary[mode] = i   
+        Modality_dictionary[mode] = i   
 
     #build faculty list
     faculty_list = []
@@ -63,7 +63,8 @@ def main() -> None:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
             if i > 0: #skips header 
-                faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[6]), line[7], line[8], line[9], line[10], line[2], line[3])) 
+                print(line)
+                faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
                 
     #build courses
     course_list = []
@@ -253,7 +254,7 @@ def course_to_list(faculty_pref: str, manager_pref: str) -> list:
     for i, v in enumerate(manager_pref.split(",")):
         manager_list[Course_dictionary[v]] = 1
     if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
+        for i, v in enumerate(faculty_pref.split(",")):
             faculty_list[Course_dictionary[v]] = 1
     return final_weights(faculty_list, manager_list)   
 
@@ -264,18 +265,18 @@ def campus_to_list(faculty_pref: str, manager_pref: str) -> list:
     for i, v in enumerate(manager_pref.split(",")):
         manager_list[Campus_dictionary[v]] = 1
     if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
+        for i, v in enumerate(faculty_pref.split(",")):
             faculty_list[Campus_dictionary[v]] = 1
     return final_weights(faculty_list, manager_list)    
     
     #convert moality to matrix
-def campus_to_list(faculty_pref: str, manager_pref: str) -> list:
+def modality_to_list(faculty_pref: str, manager_pref: str) -> list:
     faculty_list: list = [0]* len(Modality_dictionary)
     manager_list: list = [0]* len(Modality_dictionary)
     for i, v in enumerate(manager_pref.split(",")):
         manager_list[Modality_dictionary[v]] = 1
     if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
+        for i, v in enumerate(faculty_pref.split(",")):
             faculty_list[Modality_dictionary[v]] = 1
     return final_weights(faculty_list, manager_list)    
 
@@ -289,7 +290,7 @@ def final_weights(pref_faculty: str, pref_manager: str) -> list:
 #classes-------------------------------------------------------------------------------------------------------------------------------------
     #faculty class
 class faculty:
-    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str) -> None:
+    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
         self.faculty = name 
         self.faculty_id = id
         self.dp = d_pref
@@ -298,6 +299,7 @@ class faculty:
         self.campus = camp_preff
         self.campus_preferences = campus_to_list(camp_preff, camp_prefm)
         self.course_preferences = course_to_list(c_preff, c_prefm)
+        self.modality_preferences = modality_to_list(m_pref, m_prefm)
         self.hours = 0
         self.courses = []
         self.matrix = generate_faculty_schedule(weight, Days_of_week_to_list(d_pref), Times_of_day_to_list(t_pref))
