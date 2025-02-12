@@ -63,7 +63,6 @@ def main() -> None:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
             if i > 0: #skips header 
-                print(line)
                 faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
                 
     #build courses
