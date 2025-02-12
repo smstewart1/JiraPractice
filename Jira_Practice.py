@@ -2,13 +2,13 @@
 import math 
 import pandas as pd
 from datetime import datetime
-from fpdf import FPDF
+#from fpdf import FPDF
 import csv
 
     #file locations
-course_file = ".\MockClasses.csv"
-faculty_file = ".\MockFaculty.csv"
-manager_file = ".\MockManagers.csv"
+course_file = "MockClasses.csv"
+faculty_file = "MockFaculty.csv"
+manager_file = "MockManagers.csv"
 
     #constants
 manager_weight: float = 0.5
@@ -59,11 +59,10 @@ def main() -> None:
 
     #build faculty list
     faculty_list = []
-    with open(course_file, 'r') as file:
+    with open("SCRATCH.csv", 'r') as file:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
             if i > 0: #skips header 
-                print(line)
                 faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[6]), line[7], line[8], line[9], line[10], line[2], line[3])) 
                 
     #build courses
@@ -187,7 +186,7 @@ def punch_course(faculty: list, course: list) -> list:
     #extracts user ID from email
 def get_id(email: str) -> str:
     end = email.find("@")
-    user_id = end[0:end - 1]
+    user_id = email[0:end - 1]
     return user_id
     
     #converts course times to a list
