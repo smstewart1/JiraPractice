@@ -2,13 +2,13 @@
 import math 
 import pandas as pd
 from datetime import datetime
-from fpdf import FPDF
+#from fpdf import FPDF
 import csv
 
     #file locations
-course_file = ".\MockClasses.csv"
-faculty_file = ".\MockFaculty.csv"
-manager_file = ".\MockManagers.csv"
+course_file = "MockClasses.csv"
+faculty_file = "MockFaculty.csv"
+manager_file = "MockManagers.csv"
 
     #constants
 manager_weight: float = 0.5
@@ -55,16 +55,15 @@ def main() -> None:
     global Modality_dictionary
     Modality_dictionary = {}
     for i, mode in enumerate(Modality):
-        Campus_dictionary[mode] = i   
+        Modality_dictionary[mode] = i   
 
     #build faculty list
     faculty_list = []
-    with open(course_file, 'r') as file:
+    with open("SCRATCH.csv", 'r') as file:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
             if i > 0: #skips header 
-                print(line)
-                faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[6]), line[7], line[8], line[9], line[10], line[2], line[3])) 
+                faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
                 
     #build courses
     course_list = []
@@ -187,7 +186,7 @@ def punch_course(faculty: list, course: list) -> list:
     #extracts user ID from email
 def get_id(email: str) -> str:
     end = email.find("@")
-    user_id = end[0:end - 1]
+    user_id = email[0:end - 1]
     return user_id
     
     #converts course times to a list
@@ -248,57 +247,38 @@ def Times_to_list(times : list) -> list:
     return listtimes
 
     #convert campus to matrix
-def course_to_list(faculty_pref: str, manager_pref: str) -> list:
-    faculty_list: list = [0]* len(Course_dictionary)
-    manager_list: list = [0]* len(Course_dictionary)
-    for i, v in enumerate(manager_pref.split(",")):
-        manager_list[Course_dictionary[v]] = 1
-    if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
-            faculty_list[Course_dictionary[v]] = 1
-    return final_weights(faculty_list, manager_list)   
-
-    #convert campus to matrix
-def campus_to_list(faculty_pref: str, manager_pref: str) -> list:
-    faculty_list: list = [0]* len(Campus_dictionary)
-    manager_list: list = [0]* len(Campus_dictionary)
-    for i, v in enumerate(manager_pref.split(",")):
-        manager_list[Campus_dictionary[v]] = 1
-    if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
-            faculty_list[Campus_dictionary[v]] = 1
-    return final_weights(faculty_list, manager_list)    
+def preferences_to_list(faculty_pref: str, manager_pref: str, dictionary: dict) -> list:
+    #establish manager preferences
+    if len(manager_pref) != 0:
+        manager_list: list = [0]* len(dictionary)
+        for i, v in enumerate(manager_pref.split(",")):
+            manager_list[dictionary[v]] = 1
+    else:
+        manager_list: list = [1] * len(dictionary)
     
-    #convert moality to matrix
-def campus_to_list(faculty_pref: str, manager_pref: str) -> list:
-    faculty_list: list = [0]* len(Modality_dictionary)
-    manager_list: list = [0]* len(Modality_dictionary)
-    for i, v in enumerate(manager_pref.split(",")):
-        manager_list[Modality_dictionary[v]] = 1
+    #establish faculty preferences
     if len(faculty_pref) != 0:
-        for i, v in enumerate(faculty_list.split(",")):
-            faculty_list[Modality_dictionary[v]] = 1
-    return final_weights(faculty_list, manager_list)    
-
-    #create the weights for the faculty and managers prefernces****************
-def final_weights(pref_faculty: str, pref_manager: str) -> list:
-    weights = [pref_faculty, pref_manager, []]
-    for i, v in enumerate(pref_faculty):
-        weights[2].append(v * (1 - manager_weight) + pref_manager[i] * manager_weight)
-    return weights
+        faculty_list: list = [0]* len(dictionary)
+        for i, v in enumerate(faculty_pref.split(",")):
+            faculty_list[dictionary[v]] = 1
+    else:
+        faculty_list: list = [1]* len(dictionary)
+                
+    return [faculty_list, manager_list]
 
 #classes-------------------------------------------------------------------------------------------------------------------------------------
     #faculty class
 class faculty:
-    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str) -> None:
+    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
         self.faculty = name 
         self.faculty_id = id
         self.dp = d_pref
         self.tp = t_pref
         self.cp = c_preff
         self.campus = camp_preff
-        self.campus_preferences = campus_to_list(camp_preff, camp_prefm)
-        self.course_preferences = course_to_list(c_preff, c_prefm)
+        self.campus_preferences = preferences_to_list(camp_preff, camp_prefm, Campus_dictionary)
+        self.course_preferences = preferences_to_list(c_preff, c_prefm, Course_dictionary)
+        self.modality_preferences = preferences_to_list(m_pref, m_prefm, Modality_dictionary)
         self.hours = 0
         self.courses = []
         self.matrix = generate_faculty_schedule(weight, Days_of_week_to_list(d_pref), Times_of_day_to_list(t_pref))
@@ -309,13 +289,16 @@ class faculty:
     def __repr__(self) -> str:
        return "this class is used to keep faculty preferences along with their names and IDs"
     
-    def overlap(self, course) -> float:
-        overlap = 0
+    def overlap(self, course) -> list:
+        overlap_f = 0
+        overlap_m = 0
         for i in range(0, 4):
             for j in range(0, 8):
-                overlap += self.matrix[i][j] * course.matrix[i][j] * self.campus_preferences[2][Campus_dictionary[course.campuse]] * self.course_preferences[2][Course_dictionary[course.course_name]]
-        overlap = overlap * self.cp[Course_dictionary(course.course_name)]
-        return overlap
+                overlap_f += self.matrix[0][i][j] * course.matrix[i][j] 
+                overlap_m += self.matrix[1][i][j] * course.matrix[i][j] 
+        overlap_f = overlap_f * self.campus_preferences[0][2][Campus_dictionary[course.campuse]] * self.course_preferences[0][2][Course_dictionary[course.course_name]]
+        overlap_m = overlap_m * self.campus_preferences[1][2][Campus_dictionary[course.campuse]] * self.course_preferences[1][2][Course_dictionary[course.course_name]]
+        return [overlap_f, overlap_m]
                 
     #course class-----------------------
 class CourseMaker:

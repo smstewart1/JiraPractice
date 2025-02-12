@@ -1,0 +1,9 @@
+,ID,C_Prefm,Camp_prefm, Modalitym,Last,First,Weight,D_pref,T_pref,C_Preff,Camp_preff, Modalityf
+0,baarons@college.edu,"CHM-151,CHM-152,CHM-251,CHM-252","SNWC,SWC,EWC",IN,Aaronson,Bob,0.255,MTW,"Midday,Afternoon","CHM-151,CHM-152,CHM-252","SNWC,NWC,RTP,EWC",IN
+1,stwerwi@college.edu,"CHM-151,CHM-152,CHM-251","NWC,RTP",IN,Twerwilliger,Steve,0.6,TTh,"Morning,Afternoon","CHM-151,CHM-152,CHM-251,CHM-252","SNWC,SWC,EWC",HY
+2,rmarie@college.edu,"CHM-151,CHM-152,CHM-251","SNWC,NWC,RTP,EWC",IN,Marie,R. Roger,0.651,MTWTh,"Morning,Afternoon","CHM-151,CHM-152,CHM-251","SNWC,SWC,NWC,EWC","IN,HY"
+3,mlogan@college.edu,"CHM-151,CHM-152","SNWC,SWC,EWC",HY,Logan,Marie,0.052,MWTh,"Morning,Midday","CHM-151,CHM-152,CHM-251","SNWC,RTP",IN
+4,lerwin@college.edu,CHM-151,"SNWC,SWC,NWC,EWC",HY,Erwin,Leslie,0.269,TWThF,"Morning,Midday","CHM-151,CHM-152","SWC,NWC,EWC",HY
+5,lmoon@college.edu,"CHM-090,CHM-151","SNWC,RTP","IN,HY",Moon,Leanna,0.698,MThF,"Morning,Midday,Afternoon",CHM-151,NWC,"IN,HY"
+6,hmcdona@college.edu,"CHM-090,CHM-151","SWC,NWC,EWC","IN,HY",McDonald,Hannah,0.617,MWF,"Morning,Afternoon","CHM-090,CHM-151","SNWC,SWC,EWC","IN,HY"
+7,czwie@college.edu,"CHM-151,CHM-152,CHM-252",NWC,"IN,HY",Zwie,Chuck,0.181,MW,"Morning,Midday,Afternoon","CHM-090,CHM-151","NWC,RTP","IN,HY"
