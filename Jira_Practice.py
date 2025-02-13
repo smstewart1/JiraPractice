@@ -78,7 +78,7 @@ def main() -> None:
                     LecDOW = []
                     LabTime = []
                     LabDOW = []
-                if line[9] == "HY":
+                elif line[9] == "HY":
                     LecTime = []
                     LecDOW = []
                     LabTime = Course_time_to_array(line[4], line[5])
@@ -103,40 +103,22 @@ def main() -> None:
         faculty_alignment_matrix.append([])
         manager_alignment_matrix.append([])
         combined_score_matrix.append([])
-        for j, w in enumerate(faculty_list):
+        for _, w in enumerate(faculty_list):
             alignment = w.overlap(v)
             faculty_alignment_matrix[i].append(alignment[0])
             manager_alignment_matrix[i].append(alignment[1])
             combined_score_matrix[i].append(alignment[0] * (1 - manager_weight) + alignment[1] * manager_weight)
     
     #creates a course overlap score
-    
-    
+    course_overlaps = []
+    for i, v in enumerate(course_list):
+        course_overlaps.append([])
+        for _, w in enumerate(course_list):
+            course_overlaps[i].append(v.overlap(w))
+    print(course_overlaps)
     
             
-            
-    
-    #check to see if campus and course match up
-        #one cond for instructor, one cond for manager
-            #log mismatches
-            #report score as 0
-        #else calculate overlap
-    
-    #sort for the strongest match by row
-        #add to instructor's hours
-        #check to see instructor's hours
-        #
-            #drop if at max
-        #drop course
-        #check courses and instructors
-        #repeat until instructors or courses are used up
-    
-    
-    
-    #incorporate managerial overlaps
-    
-    
-    
+       
     #incorporate documentation
     
     #creatae PDF version of the error log
@@ -175,7 +157,7 @@ def generate_faculty_schedule(weight: float, d_pref: list, t_pref: list) -> list
 def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: list, modality: str) -> list:
     base: list = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
     if modality == "ON":
-        return base
+        return [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]
     if modality == "HY":
         Lecture: list = [0, 0, 0, 0, 0]
         LeTimes: list = [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -238,10 +220,14 @@ def Days_of_week_to_list(value: str) -> list:
     if value.find("F") > -1:
         list[4] = 1
     if value.find("T") > -1:
-        if value.find("TT") > -1 or value.find("Th") > -1:
+        if value.find("Th") > -1: 
             list[3] = 1
-        if value.find("TW")  > -1 or value.find("TT")  > -1 or value.find("TF")  > -1:
+        if value.find("Th") == -1:
             list[1] = 1
+        if value.find("TT") > -1:
+            list[3] = 1
+            list[1] = 1
+            
     return list
 
     #convert to times of day
@@ -265,7 +251,7 @@ def second_binary_output(number: int) -> int:
 def Times_to_list(times : list) -> list:
     listtimes = []
     for i in range(0, 9):
-        if int(times[0]) >= i + 8 and int(times[1]) > i + 8:
+        if int(times[0]) <= i + 8 and int(times[1]) >= i + 8:
             listtimes.append(1)
         else:
             listtimes.append(0)
@@ -338,7 +324,14 @@ class CourseMaker:
     
     def __repr__(self) -> str:
        return "this class is used to create courses"
-   
+
+    def overlap(self, course) -> list:
+        overlap = 0
+        for i in range(0, 4):
+            for j in range(0, 8):
+                overlap += self.matrix[j][i] * course.matrix[j][i] 
+        return overlap
+       
 #execute main
 if __name__ == "__main__":
   main()
