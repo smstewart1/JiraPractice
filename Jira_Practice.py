@@ -59,12 +59,14 @@ def main() -> None:
 
     #build faculty list
     faculty_list = []
+    faculty_names = []
     with open("SCRATCH.csv", 'r') as file:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
             if i > 0: #skips header 
-                faculty_list.append(faculty(f"{line[5]} {line[4]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
-                
+                faculty_list.append(faculty(f"{line[6]} {line[5]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
+                faculty_names.append(f"{line[6]} {line[5]}")
+    
     #build courses
     course_list = []
     with open(course_file, 'r') as file:
@@ -90,6 +92,29 @@ def main() -> None:
     
     #match courses
     
+    #test that overlap scores are printed
+    faculty_alignment_matrix = []
+    manager_alignment_matrix = []
+    combined_score_matrix = []
+    course_names = []
+    
+    for i, v in enumerate(course_list):
+        course_names.append([f"{v.course_name} {v.sec}"])
+        faculty_alignment_matrix.append([])
+        manager_alignment_matrix.append([])
+        combined_score_matrix.append([])
+        for j, w in enumerate(faculty_list):
+            alignment = w.overlap(v)
+            faculty_alignment_matrix[i].append(alignment[0])
+            manager_alignment_matrix[i].append(alignment[1])
+            combined_score_matrix[i].append(alignment[0] * (1 - manager_weight) + alignment[1] * manager_weight)
+    
+    #creates a course overlap score
+    
+    
+    
+            
+            
     
     #check to see if campus and course match up
         #one cond for instructor, one cond for manager
@@ -291,13 +316,11 @@ class faculty:
     
     def overlap(self, course) -> list:
         overlap_f = 0
-        overlap_m = 0
         for i in range(0, 4):
             for j in range(0, 8):
-                overlap_f += self.matrix[0][i][j] * course.matrix[i][j] 
-                overlap_m += self.matrix[1][i][j] * course.matrix[i][j] 
-        overlap_f = overlap_f * self.campus_preferences[0][2][Campus_dictionary[course.campuse]] * self.course_preferences[0][2][Course_dictionary[course.course_name]]
-        overlap_m = overlap_m * self.campus_preferences[1][2][Campus_dictionary[course.campuse]] * self.course_preferences[1][2][Course_dictionary[course.course_name]]
+                overlap_f += self.matrix[i][j] * course.matrix[j][i] 
+        overlap_f = overlap_f * self.campus_preferences[0][Campus_dictionary[course.campus]] * self.course_preferences[0][Course_dictionary[course.course_name]]
+        overlap_m = overlap_f * self.campus_preferences[1][Campus_dictionary[course.campus]] * self.course_preferences[1][Course_dictionary[course.course_name]]
         return [overlap_f, overlap_m]
                 
     #course class-----------------------
