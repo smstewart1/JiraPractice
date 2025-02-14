@@ -12,6 +12,7 @@ manager_file = "MockManagers.csv"
 
     #constants
 manager_weight: float = 0.5
+max_hours = 9
 
 #main function----------------------------------------------------------------------------
 def main() -> None:
@@ -115,9 +116,9 @@ def main() -> None:
         course_overlaps.append([])
         for _, w in enumerate(course_list):
             course_overlaps[i].append(v.overlap(w))
-    print(course_overlaps)
     
-            
+    for i, v in enumerate(course_list):
+        faculty_list, combined_score_matrix, course_overlaps = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list)
        
     #incorporate documentation
     
@@ -171,6 +172,32 @@ def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: 
 
     
     #helper functions----------------------------------------------
+    
+    #find the best match for a given course
+def faculty_course_match(course, index: int, course_overlap: list, course_list: list, faculty_list: list) -> tuple:
+    m = max(course_list[index])
+    if m == 0:
+        return faculty_list, course_list, course_overlap
+    
+    faculty = course_list[index].index(m)
+    faculty_list[faculty].add_course(course)
+    
+    
+    #clear out overlaps with course
+    for i, v in enumerate(course_list[index]):
+        course_list[index][i] = 0
+        
+    #clear out overlapping courses with a faculty member assigned to the course
+    if faculty_list[faculty].hours >= max_hours:
+        for i, v in enumerate(course_list):
+            v[faculty] = 0
+    else:  
+        for i, v in enumerate(course_list):
+            if course_overlap[i][faculty] > 0:
+                v[faculty] = 0
+    
+    return faculty_list, course_list, course_overlap
+    
      
     #punch out the faculty member
 def punch_faculty() -> list:
@@ -308,6 +335,12 @@ class faculty:
         overlap_f = overlap_f * self.campus_preferences[0][Campus_dictionary[course.campus]] * self.course_preferences[0][Course_dictionary[course.course_name]]
         overlap_m = overlap_f * self.campus_preferences[1][Campus_dictionary[course.campus]] * self.course_preferences[1][Course_dictionary[course.course_name]]
         return [overlap_f, overlap_m]
+    
+    def add_course(self, course) -> None:
+        self.courses.append([course.course_name, course.sec, course.matrix])
+        self.hours += course.hours
+        return
+        
                 
     #course class-----------------------
 class CourseMaker:
