@@ -9,6 +9,8 @@ import csv
 course_file = "MockClasses.csv"
 faculty_file = "MockFaculty.csv"
 manager_file = "MockManagers.csv"
+schedule_file = "Faculty_Course.csv"
+Unassigned_courses = "Unassigned_Courses.csv"
 
     #constants
 manager_weight: float = 0.5
@@ -98,13 +100,14 @@ def main() -> None:
     manager_alignment_matrix = []
     combined_score_matrix = []
     course_names = []
+    assigned_courses = []
     
     for i, v in enumerate(course_list):
         course_names.append([f"{v.course_name} {v.sec}"])
         faculty_alignment_matrix.append([])
         manager_alignment_matrix.append([])
         combined_score_matrix.append([])
-        for _, w in enumerate(faculty_list):
+        for w in faculty_list:
             alignment = w.overlap(v)
             faculty_alignment_matrix[i].append(alignment[0])
             manager_alignment_matrix[i].append(alignment[1])
@@ -114,14 +117,36 @@ def main() -> None:
     course_overlaps = []
     for i, v in enumerate(course_list):
         course_overlaps.append([])
-        for _, w in enumerate(course_list):
+        for w in course_list:
             course_overlaps[i].append(v.overlap(w))
     
     for i, v in enumerate(course_list):
-        faculty_list, combined_score_matrix, course_overlaps = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list)
+        faculty_list, combined_score_matrix, course_overlaps, match = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list)
+        assigned_courses.append(match)
        
-    #incorporate documentation
+    #print out faculty course assignments
+    file = open(schedule_file, "w")
     
+    for v in faculty_list:
+        file.write(f"{v.faculty}")
+        if len(v.courses) > 0:
+            for w in v.courses:
+                file.write(f", {w[0]} {w[1]}")
+        file.write("\n")
+    file.close()
+    
+    #print out unmatched courses
+    
+    file = open(Unassigned_courses, "w")
+    
+    file.write("Course Name, Section Number\n")
+    for i, v in enumerate(course_list):
+        if assigned_courses[i] == 1:
+            file.write(f"{v.course_name}, {v.sec}")
+            file.write("\n")
+            
+    file.close()
+                
     #creatae PDF version of the error log
     # error_log.close()
     # PDF_file = open(log_name, "r")
@@ -191,7 +216,7 @@ def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: 
 def faculty_course_match(course, index: int, course_overlap: list, course_list: list, faculty_list: list) -> tuple:
     m = max(course_list[index])
     if m == 0:
-        return faculty_list, course_list, course_overlap
+        return faculty_list, course_list, course_overlap, 0
     
     faculty = course_list[index].index(m)
     faculty_list[faculty].add_course(course)
@@ -210,7 +235,7 @@ def faculty_course_match(course, index: int, course_overlap: list, course_list: 
             if course_overlap[i][faculty] > 0:
                 v[faculty] = 0
     
-    return faculty_list, course_list, course_overlap
+    return faculty_list, course_list, course_overlap, 1
     
      
     #punch out the faculty member
