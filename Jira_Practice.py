@@ -158,16 +158,30 @@ def generate_faculty_schedule(weight: float, d_pref: list, t_pref: list) -> list
 def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: list, modality: str) -> list:
     base: list = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
     if modality == "ON":
-        return [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]
+        return [[0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022], [0.022, 0.022, 0.022, 0.022, 0.022]]
     if modality == "HY":
         Lecture: list = [0, 0, 0, 0, 0]
         LeTimes: list = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     else:
         LeTimes = Times_to_list(LeTimes)
     LaTimes = Times_to_list(LaTimes)
+    
+    #build base matrix
+    N = 0
     for i in range(0, 4):
         for j in range(0, 8):
             base[j][i] = second_binary_output(LaTimes[j] * Labs[i] + LeTimes[j] * Lecture[i])
+            if base[j][i] > 0:
+                N += 1
+    
+    #normalize the matrix
+    if N == 0:
+        return base
+    
+    for i in range(0, 4):
+        for j in range(0, 8):
+            base[j][i] = base[j][i] / N
+    
     return base 
 
     
