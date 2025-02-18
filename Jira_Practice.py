@@ -2,6 +2,8 @@
 import math 
 import pandas as pd
 from datetime import datetime
+from random import shuffle
+from copy import deepcopy
 #from fpdf import FPDF
 import csv
 
@@ -93,45 +95,40 @@ def main() -> None:
                     LabDOW = Days_of_week_to_list(line[3]) 
                 course_list.append(CourseMaker(line[0], line[1], LecTime, LecDOW, LabTime, LabDOW, int(line[10]), line[2], line[9]))
     
-    #match courses
+    #begin to search for optimal class assignments
     
-    #test that overlap scores are printed
-    faculty_alignment_matrix = []
-    manager_alignment_matrix = []
-    combined_score_matrix = []
-    course_names = []
-    assigned_courses = []
+    #create two initial randomized scores
+    iteration = 0
     
-    for i, v in enumerate(course_list):
-        course_names.append([f"{v.course_name} {v.sec}"])
-        faculty_alignment_matrix.append([])
-        manager_alignment_matrix.append([])
-        combined_score_matrix.append([])
-        for w in faculty_list:
-            alignment = w.overlap(v)
-            faculty_alignment_matrix[i].append(alignment[0])
-            manager_alignment_matrix[i].append(alignment[1])
-            combined_score_matrix[i].append(alignment[0] * (1 - manager_weight) + alignment[1] * manager_weight)
+    faculty_list_1, course_list_1, assigned_courses_1, score_1 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
+    faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     
-    #creates a course overlap score
-    course_overlaps = []
-    for i, v in enumerate(course_list):
-        course_overlaps.append([])
-        for w in course_list:
-            course_overlaps[i].append(v.overlap(w))
+    #compares random schedules until the 2nd randomly generated schedule doesn't beat the initial randomized schedule three times
+    while iteration < 5:
+        print(f"score 1 = {score_1}, score 2 = {score_2}")
+        if score_1 > score_2:
+            iteration += 1
+            del faculty_list_2, course_list_2, assigned_courses_2, score_2
+            faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
+        if score_1 < score_2:
+            iteration = 0
+            del faculty_list_1, course_list_1, assigned_courses_1, score_1
+            faculty_list_1 = deepcopy(faculty_list_2)
+            course_list_1 = deepcopy(course_list_2)
+            assigned_courses_1 = deepcopy(assigned_courses_2)
+            score_1 = score_2
+            del faculty_list_2, course_list_2, assigned_courses_2, score_2
+            faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     
-    for i, v in enumerate(course_list):
-        faculty_list, combined_score_matrix, course_overlaps, match = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list)
-        assigned_courses.append(match)
-       
     #print out faculty course assignments
     file = open(schedule_file, "w")
     
-    for v in faculty_list:
+    for v in faculty_list_1:
         file.write(f"{v.faculty}")
         if len(v.courses) > 0:
             for w in v.courses:
                 file.write(f", {w[0]} {w[1]}")
+        file.write(f" {v.hours} ")
         file.write("\n")
     file.close()
     
@@ -140,8 +137,8 @@ def main() -> None:
     file = open(Unassigned_courses, "w")
     
     file.write("Course Name, Section Number\n")
-    for i, v in enumerate(course_list):
-        if assigned_courses[i] == 1:
+    for i, v in enumerate(course_list_1):
+        if assigned_courses_1[i] == 1:
             file.write(f"{v.course_name}, {v.sec}")
             file.write("\n")
             
@@ -209,33 +206,68 @@ def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: 
     
     return base 
 
+    #return a schedule with faculty
+def schedule_builder(faculty_list: list, course_list: list) -> tuple:
     
-    #helper functions----------------------------------------------
+    #test that overlap scores are printed
+    faculty_alignment_matrix = []
+    manager_alignment_matrix = []
+    combined_score_matrix = []
+    course_names = []
+    assigned_courses = []
     
+    shuffle(course_list)
+    for i, v in enumerate(course_list):
+        course_names.append([f"{v.course_name} {v.sec}"])
+        faculty_alignment_matrix.append([])
+        manager_alignment_matrix.append([])
+        combined_score_matrix.append([])
+        for w in faculty_list:
+            alignment = w.overlap(v)
+            faculty_alignment_matrix[i].append(alignment[0])
+            manager_alignment_matrix[i].append(alignment[1])
+            combined_score_matrix[i].append(alignment[0] * (1 - manager_weight) + alignment[1] * manager_weight)
+    
+    #creates a course overlap score
+    course_overlaps = []
+    for i, v in enumerate(course_list):
+        course_overlaps.append([])
+        for w in course_list:
+            course_overlaps[i].append(v.overlap(w))
+    
+    #assign courses
+    score = 0
+    for i, v in enumerate(course_list):
+        faculty_list, combined_score_matrix, course_overlaps, match, score = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list, score)
+        assigned_courses.append(match)
+            
+    return faculty_list, course_list, assigned_courses, score
+
     #find the best match for a given course
-def faculty_course_match(course, index: int, course_overlap: list, course_list: list, faculty_list: list) -> tuple:
+def faculty_course_match(course, index: int, course_overlap: list, course_list: list, faculty_list: list, score: float) -> tuple:
     m = max(course_list[index])
     if m == 0:
-        return faculty_list, course_list, course_overlap, 0
-    
+        return faculty_list, course_list, course_overlap, 0, score
+    score += m
     faculty = course_list[index].index(m)
     faculty_list[faculty].add_course(course)
-    
-    
+        
     #clear out overlaps with course
     for i, v in enumerate(course_list[index]):
         course_list[index][i] = 0
         
     #clear out overlapping courses with a faculty member assigned to the course
     if faculty_list[faculty].hours >= max_hours:
-        for i, v in enumerate(course_list):
+        for v in course_list:
             v[faculty] = 0
     else:  
         for i, v in enumerate(course_list):
             if course_overlap[i][faculty] > 0:
                 v[faculty] = 0
     
-    return faculty_list, course_list, course_overlap, 1
+    return faculty_list, course_list, course_overlap, 1, score
+    
+    #helper functions----------------------------------------------
     
      
     #punch out the faculty member
@@ -378,6 +410,8 @@ class faculty:
     def add_course(self, course) -> None:
         self.courses.append([course.course_name, course.sec, course.matrix])
         self.hours += course.hours
+        if self.hours >= max_hours:
+            self.matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         return
         
                 
