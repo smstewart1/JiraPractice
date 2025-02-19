@@ -44,6 +44,13 @@ def main() -> None:
     del faculty_extract
     del manager_extract
     
+        #build faculty list  - THIS NEEDS TO BE EDITED
+        
+        # __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
+    for i in range(1, len(merged_extract)):
+        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
+        faculty_names.append(f"{line[6]} {line[5]}")
+                
     #create dictionaries 
     global Course_dictionary
     Course_dictionary = {}
