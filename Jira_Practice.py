@@ -40,17 +40,9 @@ def main() -> None:
     merged_extract = merged_extract.drop(columns = ["FirstNamem", "LastNamem"])
     merged_extract = merged_extract.rename(columns = {"LastNamef": "Last", "FirstNamef": "First"})
     merged_extract.to_csv("SCRATCH.csv")
-    del merged_extract
     del faculty_extract
     del manager_extract
-    
-        #build faculty list  - THIS NEEDS TO BE EDITED
-        
-        # __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
-    for i in range(1, len(merged_extract)):
-        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_pref"].values[i], merged_extract["Modaliftyf"].values[i], merged_extract["C_prefm"].values[i], merged_extract["Camp_prefm"].values[i], line[4], merged_extract["Modalitym"].values[i])) 
-        faculty_names.append(f"{line[6]} {line[5]}")
-                
+                   
     #create dictionaries 
     global Course_dictionary
     Course_dictionary = {}
@@ -69,17 +61,7 @@ def main() -> None:
     for i, mode in enumerate(Modality):
         Modality_dictionary[mode] = i   
 
-    #build faculty list
-    faculty_list = []
-    faculty_names = []
-    with open("SCRATCH.csv", 'r') as file:
-        reader = csv.reader(file, delimiter = ",")
-        for i, line in enumerate(reader):
-            if i > 0: #skips header 
-                faculty_list.append(faculty(f"{line[6]} {line[5]}", get_id(line[1]), float(line[7]), line[8], line[9], line[10], line[11], line[2], line[3], line[4], line[12])) 
-                faculty_names.append(f"{line[6]} {line[5]}")
-    
-    #build courses
+   #build courses
     course_list = []
     with open(course_file, 'r') as file:
         reader = csv.reader(file, delimiter = ",")
@@ -101,6 +83,14 @@ def main() -> None:
                     LabTime = Course_time_to_array(line[4], line[5])
                     LabDOW = Days_of_week_to_list(line[3]) 
                 course_list.append(CourseMaker(line[0], line[1], LecTime, LecDOW, LabTime, LabDOW, int(line[10]), line[2], line[9]))
+    
+            #build faculty list  - THIS NEEDS TO BE EDITED
+        
+        # __init__(self, name: str, id: str, *weight: float, *d_pref: str, *t_pref: str, *c_preff: str, *camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
+    faculty_list = []
+    for i in range(1, len(merged_extract)):
+        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i])) 
+    del merged_extract
     
     #begin to search for optimal class assignments
     

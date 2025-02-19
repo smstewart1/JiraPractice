@@ -1,4 +1,4 @@
-﻿LastName,FirstName,ID,Weight,D_pref,T_pref,C_Pref,Camp_pref, Modality
+﻿LastName,FirstName,ID,Weight,D_pref,T_pref,C_Pref,Camp_pref,Modality
 Aaronson,Bob,baarons@college.edu,0.255,MTW,"Midday,Afternoon","CHM-151,CHM-152,CHM-252","SNWC,NWC,RTP,EWC","IN"
 Twerwilliger,Steve,stwerwi@college.edu,0.6,TTh,"Morning,Afternoon","CHM-151,CHM-152,CHM-251,CHM-252","SNWC,SWC,EWC","HY"
 Marie,R. Roger,rmarie@college.edu,0.651,MTWTh,"Morning,Afternoon","CHM-151,CHM-152,CHM-251","SNWC,SWC,NWC,EWC","IN,HY"
