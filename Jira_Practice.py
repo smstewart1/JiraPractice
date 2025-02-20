@@ -11,12 +11,14 @@ import csv
 course_file = "MockClasses.csv"
 faculty_file = "MockFaculty.csv"
 manager_file = "MockManagers.csv"
-schedule_file = "Faculty_Course.csv"
+schedule_file = "Faculty_Courses_Simplified.csv"
+schedule_file_long = "Faculty_Courses_Full.csv"
 Unassigned_courses = "Unassigned_Courses.csv"
 
     #constants
 manager_weight: float = 0.5
 max_hours = 9
+iterations  = 5
 
 #main function----------------------------------------------------------------------------
 def main() -> None:
@@ -39,7 +41,6 @@ def main() -> None:
     merged_extract = pd.merge(manager_extract, faculty_extract, how = "left", on = ["ID","ID"], suffixes = ["m", "f"], validate = "1:1")
     merged_extract = merged_extract.drop(columns = ["FirstNamem", "LastNamem"])
     merged_extract = merged_extract.rename(columns = {"LastNamef": "Last", "FirstNamef": "First"})
-    merged_extract.to_csv("SCRATCH.csv")
     del faculty_extract
     del manager_extract
                    
@@ -82,11 +83,10 @@ def main() -> None:
                     LecDOW = Days_of_week_to_list(line[6])
                     LabTime = Course_time_to_array(line[4], line[5])
                     LabDOW = Days_of_week_to_list(line[3]) 
-                course_list.append(CourseMaker(line[0], line[1], LecTime, LecDOW, LabTime, LabDOW, int(line[10]), line[2], line[9]))
+                course_list.append(CourseMaker(line[0], line[1], LecTime, LecDOW, LabTime, LabDOW, int(line[10]), line[2], line[9],[line[7],line[8]],line[6],[line[4],line[5]],line[3]))
     
-            #build faculty list  - THIS NEEDS TO BE EDITED
+            #build faculty list 
         
-        # __init__(self, name: str, id: str, *weight: float, *d_pref: str, *t_pref: str, *c_preff: str, *camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str) -> None:
     faculty_list = []
     for i in range(1, len(merged_extract)):
         faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i])) 
@@ -94,14 +94,14 @@ def main() -> None:
     
     #begin to search for optimal class assignments
     
-    #create two initial randomized scores
+        #create two initial randomized scores
     iteration = 0
     
     faculty_list_1, course_list_1, assigned_courses_1, score_1 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     
-    #compares random schedules until the 2nd randomly generated schedule doesn't beat the initial randomized schedule three times
-    while iteration < 5:
+        #compares random schedules until the 2nd randomly generated schedule doesn't beat the initial randomized schedule three times
+    while iteration < iterations:
         print(f"score 1 = {score_1}, score 2 = {score_2}")
         if score_1 > score_2:
             iteration += 1
@@ -129,14 +129,53 @@ def main() -> None:
         file.write("\n")
     file.close()
     
+        #print out faculty course assignments with full details
+    file = open(schedule_file_long, "w")
+    
+    file.write("Faculty,Faculty ID,Course Name,Course Section,Modality,Lecture Times,Lecture Days,Lab Times,Lab Days\n")
+    for v in faculty_list_1:
+        if len(v.courses) == 0:
+            file.write(f"{v.faculty},{v.faculty_id},no assigned courses\n")
+        else:
+            for w in v.courses:
+                if w[3] == "ON":
+                    file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,NA,NA\n")
+                if w[3] == "HY":
+                    file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
+                else:
+                    file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
+    file.close()
+    
+    #create faculty schedules----------------update this
+    for v in faculty_list_1:
+        file_name = f"{v.faculty}.csv"
+        file = open(file_name, "w")
+        file.write("Course Name,Course Section,Modality,Lecture Times,Lecture Days,Lab Times,Lab Days\n")
+        if len(v.courses) == 0:
+            file.write(f"no assigned courses\n")
+        else:
+            for w in v.courses:
+                if w[3] == "ON":
+                    file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,NA,NA\n")
+                if w[3] == "HY":
+                    file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
+                else:
+                    file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
+        file.close()
+        
     #print out unmatched courses
     
     file = open(Unassigned_courses, "w")
     
-    file.write("Course Name, Section Number\n")
+    file.write("Course Name,Section Number,Modality,Lecture Times,Lecture Days,Lab Times,Labs Days\n")
     for i, v in enumerate(course_list_1):
         if assigned_courses_1[i] == 1:
-            file.write(f"{v.course_name}, {v.sec}")
+            if v.modality == "ON":
+                file.write(f"{v.course_name},{v.sec},{v.modality},NA,NA,NA,NA")
+            if v.modality == "HY":
+                file.write(f"{v.course_name},{v.sec},{v.modality},NA,NA,{v.lab_times[0]} - {v.lab_times[1]},{v.lab_days}")
+            else:
+                file.write(f"{v.course_name},{v.sec},{v.modality},{v.lecture_times[0]} - {v.lecture_times[1]},{v.lecture_days},{v.lab_times[0]} - {v.lab_times[1]},{v.lab_days}")
             file.write("\n")
             
     file.close()
@@ -405,7 +444,7 @@ class faculty:
         return [overlap_f, overlap_m]
     
     def add_course(self, course) -> None:
-        self.courses.append([course.course_name, course.sec, course.matrix])
+        self.courses.append([course.course_name, course.sec, course.matrix, course.modality, course.lecture_times, course.lecture_days, course.lab_times, course.lab_days])
         self.hours += course.hours
         if self.hours >= max_hours:
             self.matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
@@ -414,12 +453,16 @@ class faculty:
                 
     #course class-----------------------
 class CourseMaker:
-    def __init__(self, course: str, section: int, Lectime: list, LecDOW: list, Labtime: list, LaDOW: list, hours: int, campus: str, modality: str) -> None:
+    def __init__(self, course: str, section: int, Lectime: list, LecDOW: list, Labtime: list, LaDOW: list, hours: int, campus: str, modality: str, lecture_times: list, lecture_DOW: str, lab_times: list, lab_DOW: str) -> None:
         self.course_name = course
         self.campus = campus
         self.sec = section
         self.hours = hours
         self.modality = modality
+        self.lecture_times = lecture_times
+        self.lecture_days = lecture_DOW
+        self.lab_times = lab_times
+        self.lab_days = lab_DOW
         self.matrix = generate_course_schedule(Labtime, LaDOW, Lectime, LecDOW, modality)
 
     def __str__(self) -> str:
