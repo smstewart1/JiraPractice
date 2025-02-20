@@ -200,16 +200,15 @@ def main() -> None:
     #generates a faculty matrix
 def generate_faculty_schedule(weight: float, d_pref: list, t_pref: list) -> list:
     schedule: list = []
-    max: float = 100
+    norm: float = 0
     for i in range(0, 4):
         schedule.append([])
         for j in range(9, 17):
             schedule[i].append(probability(weight, d_pref, t_pref, i, j))
-            if max < schedule[i][j - 9]:
-                max = schedule[i][j - 9]
+            norm += schedule[i][-1]
     for i in range(0, 4):
         for j in range(0, 8):
-            schedule[i][j] = schedule[i][j] / max
+            schedule[i][j] = schedule[i][j] / norm
     return schedule 
     
     #generate course matrix
@@ -305,25 +304,6 @@ def faculty_course_match(course, index: int, course_overlap: list, course_list: 
     
     #helper functions----------------------------------------------
     
-     
-    #punch out the faculty member
-def punch_faculty() -> list:
-    updated_matrix: list = []
-    for i in range(0, 5):
-        updated_matrix.append([])
-        for j in range(0,9):
-            updated_matrix[i].append(0)
-    return updated_matrix
-    
-    #punch out the course and update matrix
-def punch_course(faculty: list, course: list) -> list:
-    updated_matrix: list = []
-    for i in range(0, 5):
-        updated_matrix.append([])
-        for j in range(0,9):
-            updated_matrix[i].append(faculty[i][j] * (1 - course[i][j]))
-    return updated_matrix
-    
     #extracts user ID from email
 def get_id(email: str) -> str:
     end = email.find("@")
@@ -346,6 +326,8 @@ def probability(weight: float, d_pref: list, t_pref: list, i: int, j: int) -> fl
     
     #convert days of week to list
 def Days_of_week_to_list(value: str) -> list:
+    if len(value) == 0:
+        return [1, 1, 1, 1, 1]
     list = [0, 0, 0, 0, 0]
     if value.find("M") > -1:
         list[0] = 1
@@ -366,6 +348,8 @@ def Days_of_week_to_list(value: str) -> list:
 
     #convert to times of day
 def Times_of_day_to_list(value: str) -> list:
+    if len(value) == 0:
+        return [1, 1, 1]
     list = [binary_output(value.find("Morning")), binary_output(value.find("Midday")), binary_output(value.find("Afternoon"))]
     return list
     
