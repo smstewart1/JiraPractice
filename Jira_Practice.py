@@ -4,8 +4,10 @@ import pandas as pd
 from datetime import datetime
 from random import shuffle
 from copy import deepcopy
-#from fpdf import FPDF
+from fpdf import FPDF
+import textwrap 
 import csv
+import os
 
     #file locations
 course_file = "MockClasses.csv"
@@ -22,11 +24,6 @@ iterations  = 5
 
 #main function----------------------------------------------------------------------------
 def main() -> None:
-    #create a log
-    # date = datetime.now()
-    # log_name = f"Scheduler_log_{date.strftime("%d%m%Y_%H_%M_%S")}.txt"
-    # error_log = open(log_name, "w")
-    # del date
         
     #read in course as data dataframe
     extract = pd.read_csv(course_file)
@@ -146,7 +143,7 @@ def main() -> None:
                     file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
     file.close()
     
-    #create faculty schedules----------------update this
+    #create faculty schedules
     for v in faculty_list_1:
         file_name = f"{v.faculty}.csv"
         file = open(file_name, "w")
@@ -179,17 +176,62 @@ def main() -> None:
             file.write("\n")
             
     file.close()
-                
-    #creatae PDF version of the error log
-    # error_log.close()
-    # PDF_file = open(log_name, "r")
-    # pdf = FPDF()
-    # pdf.add_page()
-    # pdf.set_font("Arial", size = 12)
-    # for x in PDF_file:
-    #     pdf.cell(200, 10, txt = x, ln = 1, align = 'L')
-    # pdf.output(f"{log_name[0:len(log_name) - 4]}.pdf")
-    # PDF_file.close()
+    
+    #print out faculty specific audit reports
+    for v in faculty_list:
+        file_name = f"{v.faculty} audit.txt"
+        pdf_file_name = f"{v.faculty} audit.pdf"
+        file = open(file_name, "w")
+        file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}")
+        file.write(f"\\n\\n")
+        file.write(f"Manager Responses\\nCourse Preferences: {v.cpm}\\nCampus Preference: {v.campusm}")
+        file.close()
+        text_to_pdf(file_name, pdf_file_name)
+        del file_name
+        del pdf_file_name
+        
+    #print out faculty course overlap scores
+    file_1 = open("file1.txt", "w")
+    file_2 = open("file1.txt", "w")
+    file_3 = open("file1.txt", "w")
+    
+    #create headers
+    file_1.write("Course Overlap F.txt")
+    file_2.write("Course Overlap M.txt")
+    file_3.write("Course Overlap Merged.txt")
+    for v in faculty_list_1:
+        file_1.write(f",{v.name}")
+        file_2.write(f",{v.name}")
+        file_3.write(f",{v.name}")
+    
+    file_1.write(f",{v.name}")
+    file_2.write(f",{v.name}")
+    file_3.write(f",{v.name}")
+    
+    #write in scores
+    for v in course_list_1:
+        file.write(f"{v.course_name}")
+        for w in faculty_list_1:
+            score = w.overlap(v)
+            file_1.write(f"{score[0]}")
+            file_2.write(f"{score[1]}")
+            file_3.write(f"{manager_weight * score[1] + (1 - manager_weight) * score[0]}")
+        file_1.write("\n")
+        file_2.write("\n")
+        file_3.write("\n")
+    
+    file_1.write("\n")
+    file_2.write("\n")
+    file_3.write("\n")        
+    
+    file_1.close()
+    file_2.close()
+    file_3.close()
+    
+    #save overlap files
+    text_to_pdf("Course Overlap F.txt", "Faculty Course Scores.pdf")
+    text_to_pdf("Course Overlap M.txt", "Manager Course Scores.pdf")
+    text_to_pdf("Course Overlap Merged.txt", "Composite Course Scores.pdf")
     
     return
 
@@ -304,6 +346,45 @@ def faculty_course_match(course, index: int, course_overlap: list, course_list: 
     
     #helper functions----------------------------------------------
     
+    #taken and modified from Stack Overflow - thanks m13r, https://stackoverflow.com/questions/10112244/convert-plain-text-to-pdf-in-python
+def text_to_pdf(text_file_name: str, pdf_file_name:str) -> None:
+    #open the text file
+    file = open(text_file_name)
+    text = file.read()
+    file.close() 
+    
+    #format PDF
+    a4_width_mm = 210
+    pt_to_mm = 0.35
+    fontsize_pt = 10
+    fontsize_mm = fontsize_pt * pt_to_mm
+    margin_bottom_mm = 10
+    character_width_mm = 7 * pt_to_mm
+    width_text = a4_width_mm / character_width_mm
+
+    #create PDF file
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf.set_auto_page_break(True, margin=margin_bottom_mm)
+    pdf.add_page()
+    pdf.set_font(family='Courier', size=fontsize_pt)
+    splitted = text.split('\n')
+
+    #read in text
+    for line in splitted:
+        lines = textwrap.wrap(line, width_text)
+        if len(lines) == 0:
+            pdf.ln()
+        for wrap in lines:
+            pdf.cell(0, fontsize_mm, wrap, ln=1)
+
+    #save PDF
+    pdf.output(pdf_file_name, 'F')
+    
+    #delete the text file
+    os.remove(text_file_name)
+    
+    return
+    
     #extracts user ID from email
 def get_id(email: str) -> str:
     end = email.find("@")
@@ -405,6 +486,8 @@ class faculty:
         self.tp = t_pref
         self.cp = c_preff
         self.campus = camp_preff
+        self.cpm = c_prefm
+        self.campusm = camp_prefm
         self.campus_preferences = preferences_to_list(camp_preff, camp_prefm, Campus_dictionary)
         self.course_preferences = preferences_to_list(c_preff, c_prefm, Course_dictionary)
         self.modality_preferences = preferences_to_list(m_pref, m_prefm, Modality_dictionary)
