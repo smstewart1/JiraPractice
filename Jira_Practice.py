@@ -10,32 +10,32 @@ import csv
 import os
 
     #file locations
-course_file = "MockClasses.csv"
-faculty_file = "MockFaculty.csv"
-manager_file = "MockManagers.csv"
-schedule_file = "Faculty_Courses_Simplified.csv"
-schedule_file_long = "Faculty_Courses_Full.csv"
-Unassigned_courses = "Unassigned_Courses.csv"
+course_file: str = "MockClasses.csv"
+faculty_file: str = "MockFaculty.csv"
+manager_file: str = "MockManagers.csv"
+schedule_file: str = "Faculty_Courses_Simplified.csv"
+schedule_file_long: str = "Faculty_Courses_Full.csv"
+Unassigned_courses: str = "Unassigned_Courses.csv"
 
     #constants
 manager_weight: float = 0.5
-max_hours = 9
-iterations  = 5
+max_hours: float = 9
+iterations: int = 5
 
 #main function----------------------------------------------------------------------------
-def main() -> None:
+def main() -> float:
         
     #read in course as data dataframe
-    extract = pd.read_csv(course_file)
-    Courses = list(extract["Course"].unique())
-    Campus = list(extract["Campus"].unique())
-    Modality = list(extract["Modality"].unique())
+    extract: pd = pd.read_csv(course_file)
+    Courses: list = list(extract["Course"].unique())
+    Campus: list = list(extract["Campus"].unique())
+    Modality: list = list(extract["Modality"].unique())
     del extract
     
     #create a merged database of faculy and manager preferences
     faculty_extract: pd = pd.read_csv(faculty_file)
     manager_extract: pd = pd.read_csv(manager_file)
-    merged_extract = pd.merge(manager_extract, faculty_extract, how = "left", on = ["ID","ID"], suffixes = ["m", "f"], validate = "1:1")
+    merged_extract: pd = pd.merge(manager_extract, faculty_extract, how = "left", on = ["ID","ID"], suffixes = ["m", "f"], validate = "1:1")
     merged_extract = merged_extract.drop(columns = ["FirstNamem", "LastNamem"])
     merged_extract = merged_extract.rename(columns = {"LastNamef": "Last", "FirstNamef": "First"})
     del faculty_extract
@@ -43,24 +43,24 @@ def main() -> None:
                    
     #create dictionaries 
     global Course_dictionary
-    Course_dictionary = {}
+    Course_dictionary: dict = {}
     for i, course in enumerate(Courses):
         Course_dictionary[course] = i
         
     # global Campus_dictionary
     global Campus_dictionary
-    Campus_dictionary = {}
+    Campus_dictionary: dict = {}
     for i, campus in enumerate(Campus):
         Campus_dictionary[campus] = i        
 
     # global Modality_dictionary
     global Modality_dictionary
-    Modality_dictionary = {}
+    Modality_dictionary: dict = {}
     for i, mode in enumerate(Modality):
         Modality_dictionary[mode] = i   
 
    #build courses
-    course_list = []
+    course_list: list = []
     with open(course_file, 'r') as file:
         reader = csv.reader(file, delimiter = ",")
         for i, line in enumerate(reader):
@@ -84,7 +84,7 @@ def main() -> None:
     
             #build faculty list 
         
-    faculty_list = []
+    faculty_list: list = []
     for i in range(1, len(merged_extract)):
         faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i], merged_extract["Preferencef"].values[i], merged_extract["Preferencem"].values[i], merged_extract["Overtime"].values[i])) 
     del merged_extract
@@ -92,7 +92,7 @@ def main() -> None:
     #begin to search for optimal class assignments
     
         #create two initial randomized scores
-    iteration = 0
+    iteration: int = 0
     
     faculty_list_1, course_list_1, assigned_courses_1, score_1 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
@@ -115,7 +115,7 @@ def main() -> None:
             faculty_list_2, course_list_2, assigned_courses_2, score_2 = schedule_builder(deepcopy(faculty_list), deepcopy(course_list))
     
     #print out faculty course assignments
-    file = open(schedule_file, "w")
+    file: object = open(schedule_file, "w")
     
     for v in faculty_list_1:
         file.write(f"{v.faculty}")
@@ -127,7 +127,7 @@ def main() -> None:
     file.close()
     
         #print out faculty course assignments with full details
-    file = open(schedule_file_long, "w")
+    file: object = open(schedule_file_long, "w")
     
     file.write("Faculty,Faculty ID,Course Name,Course Section,Modality,Lecture Times,Lecture Days,Lab Times,Lab Days\n")
     for v in faculty_list_1:
@@ -162,7 +162,7 @@ def main() -> None:
         
     #print out unmatched courses
     
-    file = open(Unassigned_courses, "w")
+    file: object = open(Unassigned_courses, "w")
     
     file.write("Course Name,Section Number,Modality,Lecture Times,Lecture Days,Lab Times,Labs Days\n")
     for i, v in enumerate(course_list_1):
@@ -179,9 +179,9 @@ def main() -> None:
     
     #print out faculty specific audit reports
     for v in faculty_list:
-        file_name = f"{v.faculty} audit.txt"
-        pdf_file_name = f"{v.faculty} audit.pdf"
-        file = open(file_name, "w")
+        file_name: str = f"{v.faculty} audit.txt"
+        pdf_file_name: str = f"{v.faculty} audit.pdf"
+        file: object = open(file_name, "w")
         file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}\\nOvertime Preference: {v.overtime}")
         file.write(f"\\n\\n")
         file.write(f"Manager Responses\\nCourse Preferences: {v.cpm}\\nCampus Preference: {v.campusm}\\nPreference Option: {v.manager_deferred}")
@@ -191,9 +191,9 @@ def main() -> None:
         del pdf_file_name
         
     #print out faculty course overlap scores
-    file_1 = open("file1.txt", "w")
-    file_2 = open("file1.txt", "w")
-    file_3 = open("file1.txt", "w")
+    file_1: object = open("file1.txt", "w")
+    file_2: object = open("file1.txt", "w")
+    file_3: object = open("file1.txt", "w")
     
     #create headers
     file_1.write("Course Overlap F.txt")
@@ -262,8 +262,8 @@ def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: 
         Lecture: list = [0, 0, 0, 0, 0]
         LeTimes: list = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     else:
-        LeTimes = Times_to_list(LeTimes)
-    LaTimes = Times_to_list(LaTimes)
+        LeTimes: list = Times_to_list(LeTimes)
+    LaTimes: list = Times_to_list(LaTimes)
     
     #build base matrix
     N = 0
@@ -287,11 +287,11 @@ def generate_course_schedule(LaTimes: list, Labs: list, LeTimes: list, Lecture: 
 def schedule_builder(faculty_list: list, course_list: list) -> tuple:
     
     #test that overlap scores are printed
-    faculty_alignment_matrix = []
-    manager_alignment_matrix = []
-    combined_score_matrix = []
-    course_names = []
-    assigned_courses = []
+    faculty_alignment_matrix: list = []
+    manager_alignment_matrix: list = []
+    combined_score_matrix: list = []
+    course_names: list = []
+    assigned_courses: list = []
     
     shuffle(course_list)
     for i, v in enumerate(course_list):
@@ -306,14 +306,14 @@ def schedule_builder(faculty_list: list, course_list: list) -> tuple:
             combined_score_matrix[i].append(alignment[0] * (1 - manager_weight) + alignment[1] * manager_weight)
     
     #creates a course overlap score
-    course_overlaps = []
+    course_overlaps: list = []
     for i, v in enumerate(course_list):
         course_overlaps.append([])
         for w in course_list:
             course_overlaps[i].append(v.overlap(w))
     
     #assign courses
-    score = 0
+    score: float = 0
     for i, v in enumerate(course_list):
         faculty_list, combined_score_matrix, course_overlaps, match, score = faculty_course_match(v, i, course_overlaps, combined_score_matrix, faculty_list, score)
         assigned_courses.append(match)
@@ -322,11 +322,11 @@ def schedule_builder(faculty_list: list, course_list: list) -> tuple:
 
     #find the best match for a given course
 def faculty_course_match(course, index: int, course_overlap: list, course_list: list, faculty_list: list, score: float) -> tuple:
-    m = max(course_list[index])
+    m: float = max(course_list[index])
     if m == 0:
         return faculty_list, course_list, course_overlap, 0, score
     score += m
-    faculty = course_list[index].index(m)
+    faculty: int = course_list[index].index(m)
     faculty_list[faculty].add_course(course)
         
     #clear out overlaps with course
@@ -346,36 +346,28 @@ def faculty_course_match(course, index: int, course_overlap: list, course_list: 
     
     #helper functions----------------------------------------------
     
-    #to do for helper functions
-        #label variable types
-        #get rid of enumerate when you don't use the index
-        #get rid of similar functions and make them into a single function
-        #add more comments
-        #improve spacing and formatting of comments
-    
-    
     #taken and modified from Stack Overflow - thanks m13r, https://stackoverflow.com/questions/10112244/convert-plain-text-to-pdf-in-python
 def text_to_pdf(text_file_name: str, pdf_file_name:str) -> None:
     #open the text file
-    file = open(text_file_name)
-    text = file.read()
-    file.close() 
+    test_file: object = open(text_file_name)
+    text: str = test_file.read()
+    test_file.close() 
     
     #format PDF
-    a4_width_mm = 210
-    pt_to_mm = 0.35
-    fontsize_pt = 10
-    fontsize_mm = fontsize_pt * pt_to_mm
-    margin_bottom_mm = 10
-    character_width_mm = 7 * pt_to_mm
-    width_text = a4_width_mm / character_width_mm
+    a4_width_mm: float = 210
+    pt_to_mm: float = 0.35
+    fontsize_pt: float = 10
+    fontsize_mm: float = fontsize_pt * pt_to_mm
+    margin_bottom_mm: float = 10
+    character_width_mm: float = 7 * pt_to_mm
+    width_text: float = a4_width_mm / character_width_mm
 
     #create PDF file
-    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf: object = FPDF(orientation='P', unit='mm', format='A4')
     pdf.set_auto_page_break(True, margin=margin_bottom_mm)
     pdf.add_page()
     pdf.set_font(family='Courier', size=fontsize_pt)
-    splitted = text.split('\n')
+    splitted: list = text.split('\n')
 
     #read in text
     for line in splitted:
@@ -481,7 +473,7 @@ def preferences_to_list(faculty_pref: str, manager_pref: str, dictionary: dict, 
     #establish faculty preferences
     if len(faculty_pref) != 0:
         faculty_list: list = [0]* len(dictionary)
-        for i, v in enumerate(faculty_pref.split(",")):
+        for v in faculty_pref.split(","):
             faculty_list[dictionary[v]] = 1
     else:
         faculty_list: list = [1]* len(dictionary)
@@ -526,7 +518,7 @@ class faculty:
         self.course_preferences: list = preferences_to_list(c_preff, c_prefm, Course_dictionary, faculty_pref, manager_pref)
         self.modality_preferences: list = preferences_to_list(m_pref, m_prefm, Modality_dictionary, faculty_pref, manager_pref)
         self.hours: float = 0
-        self.courses: list = []
+        self.courses: list[list] = []
         self.matrix: list = generate_faculty_schedule(weight, Days_of_week_to_list(d_pref), Times_of_day_to_list(t_pref))
         
     def __str__(self) -> str:
@@ -548,7 +540,7 @@ class faculty:
         self.courses.append([course.course_name, course.sec, course.matrix, course.modality, course.lecture_times, course.lecture_days, course.lab_times, course.lab_days])
         self.hours += course.hours
         if self.hours >= self.maximum_hours:
-            self.matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+            self.matrix: list[list[int]] = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         return
         
                 
