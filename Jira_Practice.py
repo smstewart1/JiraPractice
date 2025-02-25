@@ -86,7 +86,7 @@ def main() -> None:
         
     faculty_list = []
     for i in range(1, len(merged_extract)):
-        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i], merged_extract["Preferencef"].values[i], merged_extract["Preferencem"].values[i])) 
+        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i], merged_extract["Preferencef"].values[i], merged_extract["Preferencem"].values[i], merged_extract["Overtime"].values[i])) 
     del merged_extract
     
     #begin to search for optimal class assignments
@@ -182,7 +182,7 @@ def main() -> None:
         file_name = f"{v.faculty} audit.txt"
         pdf_file_name = f"{v.faculty} audit.pdf"
         file = open(file_name, "w")
-        file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}")
+        file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}\\nOvertime Preference: {v.overtime}")
         file.write(f"\\n\\n")
         file.write(f"Manager Responses\\nCourse Preferences: {v.cpm}\\nCampus Preference: {v.campusm}\\nPreference Option: {v.manager_deferred}")
         file.close()
@@ -486,10 +486,22 @@ def preference_cleaner(preference: str) -> str:
         return "No Preference on Assignments"
     return "Preferred Assignments"
 
+    #overtime preference
+def preference_cleaner_OT(preference: str) -> str:
+    if preference == "Y":
+        return "Overtime"
+    return "No Overtime"
+
+    #ovvertime efforts
+def max_hours_return(preference: str) -> float:
+    if preference == "Y":
+        return max_hours * 1.5
+    return max_hours
+
 #classes-------------------------------------------------------------------------------------------------------------------------------------
     #faculty class
 class faculty:
-    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str, faculty_pref: str, manager_pref: str) -> None:
+    def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str, faculty_pref: str, manager_pref: str, Overtime_preference: str) -> None:
         self.faculty = name 
         self.faculty_id = id
         self.dp = d_pref
@@ -500,6 +512,8 @@ class faculty:
         self.campus = camp_preff
         self.cpm = c_prefm
         self.campusm = camp_prefm
+        self.overtime_preference = preference_cleaner_OT(Overtime_preference)
+        self.maximum_hours = max_hours_return(Overtime_preference)
         self.campus_preferences = preferences_to_list(camp_preff, camp_prefm, Campus_dictionary, faculty_pref, manager_pref)
         self.course_preferences = preferences_to_list(c_preff, c_prefm, Course_dictionary, faculty_pref, manager_pref)
         self.modality_preferences = preferences_to_list(m_pref, m_prefm, Modality_dictionary, faculty_pref, manager_pref)
@@ -525,7 +539,7 @@ class faculty:
     def add_course(self, course) -> None:
         self.courses.append([course.course_name, course.sec, course.matrix, course.modality, course.lecture_times, course.lecture_days, course.lab_times, course.lab_days])
         self.hours += course.hours
-        if self.hours >= max_hours:
+        if self.hours >= self.maximum_hours:
             self.matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         return
         
