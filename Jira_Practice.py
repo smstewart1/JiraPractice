@@ -346,6 +346,14 @@ def faculty_course_match(course, index: int, course_overlap: list, course_list: 
     
     #helper functions----------------------------------------------
     
+    #to do for helper functions
+        #label variable types
+        #get rid of enumerate when you don't use the index
+        #get rid of similar functions and make them into a single function
+        #add more comments
+        #improve spacing and formatting of comments
+    
+    
     #taken and modified from Stack Overflow - thanks m13r, https://stackoverflow.com/questions/10112244/convert-plain-text-to-pdf-in-python
 def text_to_pdf(text_file_name: str, pdf_file_name:str) -> None:
     #open the text file
@@ -387,52 +395,52 @@ def text_to_pdf(text_file_name: str, pdf_file_name:str) -> None:
     
     #extracts user ID from email
 def get_id(email: str) -> str:
-    end = email.find("@")
-    user_id = email[0:end - 1]
+    end: int = email.find("@")
+    user_id: str = email[0:end - 1]
     return user_id
     
     #converts course times to a list
-def Course_time_to_array(Lower: str, Upper: str) -> list:
-    Lower = Lower[0:2].replace(":", "")
-    Upper = Upper[0:2].replace(":", "")
+def Course_time_to_array(Lower: str, Upper: str) -> list: 
+    Lower: list = Lower[0:2].replace(":", "")
+    Upper: list = Upper[0:2].replace(":", "")
     return [int(Lower), int(Upper)]
             
     #probability function
 def probability(weight: float, d_pref: list, t_pref: list, i: int, j: int) -> float:
-    a = (0.01 + weight) * math.exp(-(i - d_pref[i])^2) #day weight
-    b = (1.01 - weight) * (0.01 + t_pref[0]) * math.exp(-(9 - j)^2)
-    c = (1.01 - weight) * (0.01 + t_pref[1]) * math.exp(-(12 - j)^2)
-    d = (1.01 - weight) * (0.01 + t_pref[2]) * math.exp(-(15 - j)^2)
+    a: float = (0.01 + weight) * math.exp(-(i - d_pref[i])^2) #day weight
+    b: float = (1.01 - weight) * (0.01 + t_pref[0]) * math.exp(-(9 - j)^2)
+    c: float = (1.01 - weight) * (0.01 + t_pref[1]) * math.exp(-(12 - j)^2)
+    d: float = (1.01 - weight) * (0.01 + t_pref[2]) * math.exp(-(15 - j)^2)
     return a + b + c + d
     
     #convert days of week to list
 def Days_of_week_to_list(value: str) -> list:
     if len(value) == 0:
         return [1, 1, 1, 1, 1]
-    list = [0, 0, 0, 0, 0]
+    list_DOW: list = [0, 0, 0, 0, 0]
     if value.find("M") > -1:
-        list[0] = 1
+        list_DOW[0] = 1
     if value.find("W") > -1:
-        list[2] = 1
+        list_DOW[2] = 1
     if value.find("F") > -1:
-        list[4] = 1
+        list_DOW[4] = 1
     if value.find("T") > -1:
         if value.find("Th") > -1: 
-            list[3] = 1
+            list_DOW[3] = 1
         if value.find("Th") == -1:
-            list[1] = 1
+            list_DOW[1] = 1
         if value.find("TT") > -1:
-            list[3] = 1
-            list[1] = 1
+            list_DOW[3] = 1
+            list_DOW[1] = 1
             
-    return list
+    return list_DOW
 
     #convert to times of day
 def Times_of_day_to_list(value: str) -> list:
     if len(value) == 0:
         return [1, 1, 1]
-    list = [binary_output(value.find("Morning")), binary_output(value.find("Midday")), binary_output(value.find("Afternoon"))]
-    return list
+    list_TOD: list = [binary_output(value.find("Morning")), binary_output(value.find("Midday")), binary_output(value.find("Afternoon"))]
+    return list_TOD
     
     #return 1 or 0 for values
 def binary_output(number: int) -> int:
@@ -448,7 +456,7 @@ def second_binary_output(number: int) -> int:
 
 #convert times to a list
 def Times_to_list(times : list) -> list:
-    listtimes = []
+    listtimes: list = []
     for i in range(0, 9):
         if int(times[0]) <= i + 8 and int(times[1]) >= i + 8:
             listtimes.append(1)
@@ -502,24 +510,24 @@ def max_hours_return(preference: str) -> float:
     #faculty class
 class faculty:
     def __init__(self, name: str, id: str, weight: float, d_pref: str, t_pref: str, c_preff: str, camp_preff: str,  c_prefm: str, camp_prefm: str, m_pref: str, m_prefm: str, faculty_pref: str, manager_pref: str, Overtime_preference: str) -> None:
-        self.faculty = name 
-        self.faculty_id = id
-        self.dp = d_pref
-        self.tp = t_pref
-        self.cp = c_preff
-        self.faculty_deferred = preference_cleaner(faculty_pref)
-        self.manager_deferred = preference_cleaner(manager_pref)
-        self.campus = camp_preff
-        self.cpm = c_prefm
-        self.campusm = camp_prefm
-        self.overtime_preference = preference_cleaner_OT(Overtime_preference)
-        self.maximum_hours = max_hours_return(Overtime_preference)
-        self.campus_preferences = preferences_to_list(camp_preff, camp_prefm, Campus_dictionary, faculty_pref, manager_pref)
-        self.course_preferences = preferences_to_list(c_preff, c_prefm, Course_dictionary, faculty_pref, manager_pref)
-        self.modality_preferences = preferences_to_list(m_pref, m_prefm, Modality_dictionary, faculty_pref, manager_pref)
-        self.hours = 0
-        self.courses = []
-        self.matrix = generate_faculty_schedule(weight, Days_of_week_to_list(d_pref), Times_of_day_to_list(t_pref))
+        self.faculty: str = name 
+        self.faculty_id: int = id
+        self.dp: str = d_pref
+        self.tp: str = t_pref
+        self.cp: str = c_preff
+        self.faculty_deferred: str = preference_cleaner(faculty_pref)
+        self.manager_deferred: str = preference_cleaner(manager_pref)
+        self.campus: str = camp_preff
+        self.cpm: str = c_prefm
+        self.campusm: str = camp_prefm
+        self.overtime_preference: str = preference_cleaner_OT(Overtime_preference)
+        self.maximum_hours: str = max_hours_return(Overtime_preference)
+        self.campus_preferences: list = preferences_to_list(camp_preff, camp_prefm, Campus_dictionary, faculty_pref, manager_pref)
+        self.course_preferences: list = preferences_to_list(c_preff, c_prefm, Course_dictionary, faculty_pref, manager_pref)
+        self.modality_preferences: list = preferences_to_list(m_pref, m_prefm, Modality_dictionary, faculty_pref, manager_pref)
+        self.hours: float = 0
+        self.courses: list = []
+        self.matrix: list = generate_faculty_schedule(weight, Days_of_week_to_list(d_pref), Times_of_day_to_list(t_pref))
         
     def __str__(self) -> str:
         return f"the schedule preference for {self.faculty}"
@@ -528,12 +536,12 @@ class faculty:
        return "this class is used to keep faculty preferences along with their names and IDs"
     
     def overlap(self, course) -> list:
-        overlap_f = 0
+        overlap_f: float = 0
         for i in range(0, 4):
             for j in range(0, 8):
                 overlap_f += self.matrix[i][j] * course.matrix[j][i] 
         overlap_f = overlap_f * self.campus_preferences[0][Campus_dictionary[course.campus]] * self.course_preferences[0][Course_dictionary[course.course_name]]
-        overlap_m = overlap_f * self.campus_preferences[1][Campus_dictionary[course.campus]] * self.course_preferences[1][Course_dictionary[course.course_name]]
+        overlap_m: float = overlap_f * self.campus_preferences[1][Campus_dictionary[course.campus]] * self.course_preferences[1][Course_dictionary[course.course_name]]
         return [overlap_f, overlap_m]
     
     def add_course(self, course) -> None:
@@ -547,16 +555,16 @@ class faculty:
     #course class-----------------------
 class CourseMaker:
     def __init__(self, course: str, section: int, Lectime: list, LecDOW: list, Labtime: list, LaDOW: list, hours: int, campus: str, modality: str, lecture_times: list, lecture_DOW: str, lab_times: list, lab_DOW: str) -> None:
-        self.course_name = course
-        self.campus = campus
-        self.sec = section
-        self.hours = hours
-        self.modality = modality
-        self.lecture_times = lecture_times
-        self.lecture_days = lecture_DOW
-        self.lab_times = lab_times
-        self.lab_days = lab_DOW
-        self.matrix = generate_course_schedule(Labtime, LaDOW, Lectime, LecDOW, modality)
+        self.course_name: str = course
+        self.campus: str = campus
+        self.sec: float = section
+        self.hours: float = hours
+        self.modality: str = modality
+        self.lecture_times: list = lecture_times
+        self.lecture_days: list = lecture_DOW
+        self.lab_times: list = lab_times
+        self.lab_days: list = lab_DOW
+        self.matrix: list = generate_course_schedule(Labtime, LaDOW, Lectime, LecDOW, modality)
 
     def __str__(self) -> str:
         return f"the schedule for {self.matrix}"
@@ -564,8 +572,8 @@ class CourseMaker:
     def __repr__(self) -> str:
        return "this class is used to create courses"
 
-    def overlap(self, course) -> list:
-        overlap = 0
+    def overlap(self, course) -> float:
+        overlap: float = 0
         for i in range(0, 4):
             for j in range(0, 8):
                 overlap += self.matrix[j][i] * course.matrix[j][i] 
