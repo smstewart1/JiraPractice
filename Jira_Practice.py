@@ -8,6 +8,7 @@ from fpdf import FPDF
 import textwrap 
 import csv
 import os
+from math import log
 
     #file locations
 course_file: str = "MockClasses.csv"
@@ -492,11 +493,31 @@ def preference_cleaner_OT(preference: str) -> str:
         return "Overtime"
     return "No Overtime"
 
-    #ovvertime efforts
+    #overtime efforts
 def max_hours_return(preference: str) -> float:
     if preference == "Y":
         return max_hours * 1.5
     return max_hours
+
+    #schedule audit code
+def audit_code(date_time: float, faculty_id: int) -> list[int, int, int, int]:
+    M: int = date_time.month
+    D: int = date_time.day
+    Y: int = date_time.year
+    H: int = date_time.hour
+    Min: int = date_time.min
+    schedule_code_raw = Y + M + log(D) + H + log(Min)
+    schedule_code = round(schedule_code_raw)
+    schedule_code_check = round(100 * (schedule_code_raw - schedule_code))
+    del schedule_code_raw
+    
+    faculty_code: int = 0
+    for i in str(faculty_id):
+        scale += int(i)
+        
+    faculty_code_check = round(log(faculty_code / 99))
+    return [faculty_code, faculty_code_check, schedule_code, schedule_code_check]
+
 
 #classes-------------------------------------------------------------------------------------------------------------------------------------
     #faculty class
