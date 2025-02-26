@@ -1,5 +1,4 @@
 #import libraries---------------------------------------------------------------------------
-import math 
 import pandas as pd
 from datetime import datetime
 from random import shuffle
@@ -8,7 +7,7 @@ from fpdf import FPDF
 import textwrap 
 import csv
 import os
-from math import log
+from math import log, exp
 
     #file locations
 course_file: str = "MockClasses.csv"
@@ -25,7 +24,10 @@ iterations: int = 5
 
 #main function----------------------------------------------------------------------------
 def main() -> float:
-        
+    
+    #time stamp the report
+    date_time: datetime = datetime.now()
+    
     #read in course as data dataframe
     extract: pd = pd.read_csv(course_file)
     Courses: list = list(extract["Course"].unique())
@@ -142,6 +144,7 @@ def main() -> float:
                     file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
                 else:
                     file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
+    file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}")
     file.close()
     
     #create faculty schedules
@@ -159,6 +162,7 @@ def main() -> float:
                     file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
                 else:
                     file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
+        file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}")
         file.close()
         
     #print out unmatched courses
@@ -175,7 +179,7 @@ def main() -> float:
             else:
                 file.write(f"{v.course_name},{v.sec},{v.modality},{v.lecture_times[0]} - {v.lecture_times[1]},{v.lecture_days},{v.lab_times[0]} - {v.lab_times[1]},{v.lab_days}")
             file.write("\n")
-            
+    file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
     file.close()
     
     #print out faculty specific audit reports
@@ -186,10 +190,14 @@ def main() -> float:
         file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}\\nOvertime Preference: {v.overtime}")
         file.write(f"\\n\\n")
         file.write(f"Manager Responses\\nCourse Preferences: {v.cpm}\\nCampus Preference: {v.campusm}\\nPreference Option: {v.manager_deferred}")
+        file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}\\n")
+        listlet: list = audit_code(date_time, v.faculty_id)
+        file.write(f"{listlet[0]} {listlet[1]} {listlet[2]} {listlet[3]}")
         file.close()
         text_to_pdf(file_name, pdf_file_name)
         del file_name
         del pdf_file_name
+        del listlet
         
     #print out faculty course overlap scores
     file_1: object = open("file1.txt", "w")
@@ -225,6 +233,10 @@ def main() -> float:
     file_2.write("\n")
     file_3.write("\n")        
     
+    file_1.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
+    file_2.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
+    file_3.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
+    
     file_1.close()
     file_2.close()
     file_3.close()
@@ -235,7 +247,6 @@ def main() -> float:
     text_to_pdf("Course Overlap Merged.txt", "Composite Course Scores.pdf")
     
     return
-
 
 #defined functions----------------------------------------------------------------------------------------------------------------------
     #builds up faculty, course, and manager classes--------------------------------------
@@ -400,10 +411,10 @@ def Course_time_to_array(Lower: str, Upper: str) -> list:
             
     #probability function
 def probability(weight: float, d_pref: list, t_pref: list, i: int, j: int) -> float:
-    a: float = (0.01 + weight) * math.exp(-(i - d_pref[i])^2) #day weight
-    b: float = (1.01 - weight) * (0.01 + t_pref[0]) * math.exp(-(9 - j)^2)
-    c: float = (1.01 - weight) * (0.01 + t_pref[1]) * math.exp(-(12 - j)^2)
-    d: float = (1.01 - weight) * (0.01 + t_pref[2]) * math.exp(-(15 - j)^2)
+    a: float = (0.01 + weight) * exp(-(i - d_pref[i])^2) #day weight
+    b: float = (1.01 - weight) * (0.01 + t_pref[0]) * exp(-(9 - j)^2)
+    c: float = (1.01 - weight) * (0.01 + t_pref[1]) * exp(-(12 - j)^2)
+    d: float = (1.01 - weight) * (0.01 + t_pref[2]) * exp(-(15 - j)^2)
     return a + b + c + d
     
     #convert days of week to list
@@ -500,22 +511,22 @@ def max_hours_return(preference: str) -> float:
     return max_hours
 
     #schedule audit code
-def audit_code(date_time: float, faculty_id: int) -> list[int, int, int, int]:
-    M: int = date_time.month
-    D: int = date_time.day
-    Y: int = date_time.year
-    H: int = date_time.hour
-    Min: int = date_time.min
+def audit_code(date_time: float, faculty_id: str) -> list[int, int, int, int]:
+    M: int = int(date_time.strftime("%m"))
+    D: int = int(date_time.strftime("%d"))
+    Y: int = int(date_time.year)
+    H: int = int(date_time.strftime("%H"))
+    Min: int = int(date_time.strftime("%M"))
     schedule_code_raw = Y + M + log(D) + H + log(Min)
     schedule_code = round(schedule_code_raw)
     schedule_code_check = round(100 * (schedule_code_raw - schedule_code))
     del schedule_code_raw
     
     faculty_code: int = 0
-    for i in str(faculty_id):
-        scale += int(i)
+    for i in faculty_id:
+        faculty_code += ord(i)
         
-    faculty_code_check = round(log(faculty_code / 99))
+    faculty_code_check = round(log(faculty_code * 13))
     return [faculty_code, faculty_code_check, schedule_code, schedule_code_check]
 
 
