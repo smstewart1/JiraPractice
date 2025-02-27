@@ -22,6 +22,11 @@ manager_weight: float = 0.5
 max_hours: float = 9
 iterations: int = 5
 
+    #dictionaries
+Course_dictionary: dict = {}
+Campus_dictionary: dict = {}
+Modality_dictionary: dict = {}
+
 #main function----------------------------------------------------------------------------
 def main() -> float:
     
@@ -45,20 +50,14 @@ def main() -> float:
     del manager_extract
                    
     #create dictionaries 
-    global Course_dictionary
-    Course_dictionary: dict = {}
     for i, course in enumerate(Courses):
         Course_dictionary[course] = i
         
     # global Campus_dictionary
-    global Campus_dictionary
-    Campus_dictionary: dict = {}
     for i, campus in enumerate(Campus):
         Campus_dictionary[campus] = i        
 
     # global Modality_dictionary
-    global Modality_dictionary
-    Modality_dictionary: dict = {}
     for i, mode in enumerate(Modality):
         Modality_dictionary[mode] = i   
 
@@ -86,10 +85,9 @@ def main() -> float:
                 course_list.append(CourseMaker(line[0], line[1], LecTime, LecDOW, LabTime, LabDOW, int(line[10]), line[2], line[9],[line[7],line[8]],line[6],[line[4],line[5]],line[3]))
     
             #build faculty list 
-        
     faculty_list: list = []
     for i in range(1, len(merged_extract)):
-        faculty_list.append(faculty(f"{merged_extract["First"].values[i]} {merged_extract["Last"].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i], merged_extract["Preferencef"].values[i], merged_extract["Preferencem"].values[i], merged_extract["Overtime"].values[i])) 
+        faculty_list.append(faculty(f"{merged_extract['First'].values[i]} {merged_extract['Last'].values[i]}", get_id(merged_extract["ID"].values[i]), float(merged_extract["Weight"].values[i]), merged_extract["D_pref"].values[i], merged_extract["T_pref"].values[i], merged_extract["C_Preff"].values[i], merged_extract["Camp_preff"].values[i], merged_extract["C_Prefm"].values[i], merged_extract["Camp_prefm"].values[i],merged_extract["Modalityf"].values[i], merged_extract["Modalitym"].values[i], merged_extract["Preferencef"].values[i], merged_extract["Preferencem"].values[i], merged_extract["Overtime"].values[i])) 
     del merged_extract
     
     #begin to search for optimal class assignments
@@ -144,7 +142,7 @@ def main() -> float:
                     file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
                 else:
                     file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
-    file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}")
+    file.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}")
     file.close()
     
     #create faculty schedules
@@ -162,7 +160,7 @@ def main() -> float:
                     file.write(f"{w[0]},{w[1]},{w[3]},NA,NA,{w[6][0]} - {w[6][1]},{w[7]}\n")
                 else:
                     file.write(f"{w[0]},{w[1]},{w[3]},{w[4][0]} - {w[4][1]},{w[5]},{w[6][0]} - {w[6][1]},{w[7]}\n")
-        file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}")
+        file.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}")
         file.close()
         
     #print out unmatched courses
@@ -179,7 +177,7 @@ def main() -> float:
             else:
                 file.write(f"{v.course_name},{v.sec},{v.modality},{v.lecture_times[0]} - {v.lecture_times[1]},{v.lecture_days},{v.lab_times[0]} - {v.lab_times[1]},{v.lab_days}")
             file.write("\n")
-    file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
+    file.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}") 
     file.close()
     
     #print out faculty specific audit reports
@@ -187,10 +185,10 @@ def main() -> float:
         file_name: str = f"{v.faculty} audit.txt"
         pdf_file_name: str = f"{v.faculty} audit.pdf"
         file: object = open(file_name, "w")
-        file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}\\nOvertime Preference: {v.overtime}")
+        file.write(f"Faculty Responses\\nDays of Week: {v.dp}\\nTime of Day: {v.tp}\\nCourse Preferences: {v.cp}\\nCampus Preference: {v.campus}\\nPreference Option: {v.faculty_deferred}\\nOvertime Preference: {v.overtime_preference}")
         file.write(f"\\n\\n")
         file.write(f"Manager Responses\\nCourse Preferences: {v.cpm}\\nCampus Preference: {v.campusm}\\nPreference Option: {v.manager_deferred}")
-        file.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}\\n")
+        file.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}\\n")
         listlet: list = audit_code(date_time, v.faculty_id)
         file.write(f"{listlet[0]} {listlet[1]} {listlet[2]} {listlet[3]}")
         file.close()
@@ -201,25 +199,27 @@ def main() -> float:
         
     #print out faculty course overlap scores
     file_1: object = open("file1.txt", "w")
-    file_2: object = open("file1.txt", "w")
-    file_3: object = open("file1.txt", "w")
+    file_2: object = open("file2.txt", "w")
+    file_3: object = open("file3.txt", "w")
     
     #create headers
     file_1.write("Course Overlap F.txt")
     file_2.write("Course Overlap M.txt")
     file_3.write("Course Overlap Merged.txt")
     for v in faculty_list_1:
-        file_1.write(f",{v.name}")
-        file_2.write(f",{v.name}")
-        file_3.write(f",{v.name}")
+        file_1.write(f",{v.faculty}")
+        file_2.write(f",{v.faculty}")
+        file_3.write(f",{v.faculty}")
     
-    file_1.write(f",{v.name}")
-    file_2.write(f",{v.name}")
-    file_3.write(f",{v.name}")
+    file_1.write("\n")
+    file_2.write("\n")
+    file_3.write("\n")
     
     #write in scores
     for v in course_list_1:
-        file.write(f"{v.course_name}")
+        file_1.write(f"{v.course_name}")
+        file_2.write(f"{v.course_name}")
+        file_3.write(f"{v.course_name}")
         for w in faculty_list_1:
             score = w.overlap(v)
             file_1.write(f"{score[0]}")
@@ -233,18 +233,18 @@ def main() -> float:
     file_2.write("\n")
     file_3.write("\n")        
     
-    file_1.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
-    file_2.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
-    file_3.write(f"Date: {date_time.strftime("%m%d%Y")}\\nTime: {date_time.strftime("%H%M")}") 
+    file_1.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}") 
+    file_2.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}") 
+    file_3.write(f"Date: {date_time.strftime('%m%d%Y')}\\nTime: {date_time.strftime('%H%M')}") 
     
     file_1.close()
     file_2.close()
     file_3.close()
     
     #save overlap files
-    text_to_pdf("Course Overlap F.txt", "Faculty Course Scores.pdf")
-    text_to_pdf("Course Overlap M.txt", "Manager Course Scores.pdf")
-    text_to_pdf("Course Overlap Merged.txt", "Composite Course Scores.pdf")
+    text_to_pdf("file1.txt", "Faculty Course Scores.pdf")
+    text_to_pdf("file2.txt", "Manager Course Scores.pdf")
+    text_to_pdf("file3.txt", "Composite Course Scores.pdf")
     
     return
 
